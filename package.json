@@ -1,0 +1,25 @@
+{
+  "name": "grunt-galen",
+  "version": "0.1.0",
+  "description": "Grunt plugin for Galen",
+  "files": [
+    "tasks"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "yes"
+  },
+  "keywords": [
+    "grunt",
+    "galen"
+  ],
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13"
+  },
+  "author": "mjurczyk",
+  "license": "ISC"
+}
