@@ -135,7 +135,7 @@ module.exports = function (grunt) {
             '-Ddevice="' + device + '"',
             '-Dsize="' + deviceSize + '"',
             options.htmlReport === true ? '--htmlreport' : '',
-            options.htmlReportDest || ''
+            options.htmlReport === true ? options.htmlReportDest || '' : ''
           ].join(' '),
           function onTestFinished (error, output) {
             if (error) {
