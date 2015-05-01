@@ -24,7 +24,7 @@ grunt.loadNpmTasks('grunt-galen');
 
 
 | name     |                  description                  |
-|:----:----|:----------------------------------------------|
+|:---------|:----------------------------------------------|
 |websiteUrl|Url for which the test will be run             |
 |device    |Device codename (ex. mobile, tablet ..)        |
 |size      |Screen dimensions of the device (ex. 800x600)  |
