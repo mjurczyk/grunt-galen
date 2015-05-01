@@ -45,7 +45,55 @@ module.exports = function (grunt) {
 
       done();
     };
-
+    
+    /*
+     * Validate input date. Throw on error.
+     */
+    function validateInputs () {
+      if (options.htmlReport) {
+        if (typeof options.htmlReport !== 'boolean') {
+          throw 'options.htmlReport must be a boolean'; 
+        }
+        if (!options.htmlReportDest) {
+          throw 'options.htmlReportDest not specified, while options.htmlReport set to true';
+        }
+      } else {
+        options.htmlReport = false; 
+      }
+      
+      if (options.htmlReportDest) {
+        if (typeof options.htmlReportDest !== 'string') {
+          throw 'options.htmlReportDest must be a string'; 
+        }
+      } else {
+        options.htmlReportDest = ''; 
+      }
+      
+      if (options.output) {
+        if (typeof options.htmlReport !== 'boolean') {
+          throw 'options.output must be a boolean'; 
+        }
+      } else {
+        options.output = false; 
+      }
+      
+      if (options.devices) {
+        if (typeof options.devices !== 'object') {
+          throw 'options.output must be a object'; 
+        }
+      } else {
+        throw 'options.devices not specified. Cannot test Galen without any target devices.'; 
+      }
+      
+      if (options.url) {
+        if (typeof options.url !== 'string') {
+          throw 'options.url must be a string'; 
+        }
+      } else {
+        throw 'options.url not specified. Cannot test Galen without a target application.'; 
+      }
+    };
+    
     /**
      * Test if file exists.
      * @param   {String}  file path
@@ -100,6 +148,8 @@ module.exports = function (grunt) {
      * Testing process
      */
     log('Testing Galen...');
+    
+    validateInputs();
 
     files.forEach(function (file) {
       file.src.filter(fileExists)
