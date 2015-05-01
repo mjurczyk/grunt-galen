@@ -23,7 +23,7 @@ module.exports = function (grunt) {
     /**
      * Final callback function
      */
-    var finishGalandTests = function () {
+    var finishGalenTests = function () {
       var testLog = reports.join('\n\r');
       var status = {
         passed: (testLog.match(/pass(ed|ing?)?/gmi) || []).length,
@@ -40,10 +40,23 @@ module.exports = function (grunt) {
 
       log('passed ' + status.passed + ' test(s) [' + status.percentage + '%]' );
       if (status.failed > 0) {
-        log('failed ' + status.failed, ' test(s) [' + 100 - status.percentage, '%]');
+        log('failed ' + status.failed, ' test(s) [' + (100 - status.percentage), '%]');
       }
 
       done();
+    };
+    
+    function validateGalen (callback) {
+      childprocess.exec('galen -v', function (error, output) {
+        if (error) {
+          throw {
+            message: 'Galen not available',
+            error: error
+          };
+        } else {
+          callback();
+        }
+      });
     };
     
     /*
@@ -124,7 +137,7 @@ module.exports = function (grunt) {
             options.htmlReport === true ? '--htmlreport' : '',
             options.htmlReportDest || ''
           ].join(' '),
-          function onTestFinished (error, output, stderr) {
+          function onTestFinished (error, output) {
             if (error) {
               throw error;
             }
@@ -134,7 +147,7 @@ module.exports = function (grunt) {
 
             spawns.splice(spawns.indexOf(childProc), 1);
             if (spawns.length === 0) {
-              finishGalandTests();
+              finishGalenTests();
             }
           }
         );
@@ -143,6 +156,27 @@ module.exports = function (grunt) {
         throw err;
       }
     };
+    
+    /**
+     * Launch the testing process.
+     */
+    function runTests () {
+      files.forEach(function (file) {
+        file.src.filter(fileExists)
+        .forEach(function (filePath) {
+
+          /*
+           * Print out a label and start a testing suite
+           * for every test file and device size.
+           */
+          log('⦿ ' + filePath);
+
+          Object.keys(options.devices).forEach(function (device) {
+            spawnTestProcess(filePath, device);
+          });
+        });
+      });
+    };
 
     /*
      * Testing process
@@ -150,21 +184,7 @@ module.exports = function (grunt) {
     log('Testing Galen...');
     
     validateInputs();
-
-    files.forEach(function (file) {
-      file.src.filter(fileExists)
-      .forEach(function (filePath) {
-
-        /*
-         * Print out a label and start a testing suite
-         * for every test file and device size.
-         */
-        log('⦿ ' + filePath);
-
-        Object.keys(options.devices).forEach(function (device) {
-          spawnTestProcess(filePath, device);
-        });
-      });
-    });
+    
+    validateGalen(runTests);
   });
 };
