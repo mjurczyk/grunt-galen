@@ -40,7 +40,7 @@ module.exports = function (grunt) {
 
       log('passed ' + status.passed + ' test(s) [' + status.percentage + '%]' );
       if (status.failed > 0) {
-        log('failed ' + status.failed, ' test(s) [' + (100 - status.percentage), '%]');
+        log('failed ' + status.failed + ' test(s) [' + (100 - status.percentage) + '%]');
       }
 
       done();
