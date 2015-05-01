@@ -7,7 +7,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "yes"
+    "url": "https://github.com/mjurczyk/grunt-galen"
   },
   "keywords": [
     "grunt",
