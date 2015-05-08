@@ -29,6 +29,10 @@ module.exports = function (grunt) {
     function checkLibrary (callback) {
       var glPath = (options.cwd || '.') + '/gl.js';
       
+      if (options.nogl === true) {
+        callback();
+      }
+      
       fs.stat(glPath, function (err, stats) {
         var copyStream;
         
