@@ -1,31 +1,53 @@
-// TODO: Add jsdoc
 /*
- * grunt-galen
+ * @name grunt-galen
+ * @author mjurczyk
+ * 
+ * @exports task.galen
  */
 
+/*
+ * @requires fs
+ * @requires childprocess
+ */
 var fs = require('fs');
 var childprocess = require('child_process');
 
-// TODO: Add jsdoc
+/**
+ * Grunt task.
+ * @param   {Object}   grunt Grunt
+ */
 module.exports = function (grunt) {
   grunt.registerMultiTask('galen', 'Run Galen tests.', function () {
     /*
-     * Logging shortcut
+     * log  logging shortcut
      */
     var log = grunt.log.writeln;
 
     /*
-     * Input
+     * @input
+     * options  grunt task options
+     * done     async callback
+     * files    grunt task target files
      */
     var options = this.options() || {};
     var done = this.async();
     var files = this.files;
 
     /*
-     * Output
+     * @output
+     * @private
      */
     var reports = [];
     
+    /**
+     * Determine whether gl.js should be used during the build.
+     * Unless options.nogl is set to true, that is a case.
+     * 
+     * If necessary, duplicate `local` copy of gl.js from ./lib/gl.js
+     * and put it in the cwd directory.
+     * 
+     * @param {Function} callback function callback
+     */
     function checkLibrary (callback) {
       var glPath = (options.cwd || '.') + '/gl.js';
       
@@ -50,7 +72,19 @@ module.exports = function (grunt) {
       }
     };
 
-    // TODO: Add jsdoc
+    /**
+     * Galen JavaScript API is a closed environment converted to
+     * Java on runtime, hence it has a lot of flaws regarding String
+     * to JSON conversion directly in Java. To avoid that, config file
+     * is generated and imported in gl.js (it can also be directly
+     * imported in test files, if proper config module is created).
+     * 
+     * Config file contains all necessary information from the task
+     * config, and uses config#set method from gl.js to put it into
+     * test suites.
+     * 
+     * @param {Function} callback function callback
+     */
     function buildConfigFile (callback) {
       var data = {};
 
@@ -87,7 +121,7 @@ module.exports = function (grunt) {
     };
 
     /**
-     * Test if file exists.
+     * Test if a file exists.
      * @param   {String}  file path
      * @returns {Boolean} file existentional feelings
      */
@@ -95,7 +129,12 @@ module.exports = function (grunt) {
       return grunt.file.exists(file);
     };
 
-    // TODO: Add jsdoc
+    /**
+     * Start the testing process. Generate shell terminal commands
+     * and spawn them as separate child processes.
+     * 
+     * When all processes finish, terminate the task.
+     */
     function runGalenTests () {
       var spawns = [];
 
@@ -127,7 +166,10 @@ module.exports = function (grunt) {
       });
     };
 
-    // TODO: Add jsdoc
+    /**
+     * Generate reports, print them if necessary, and finish
+     * the async Grunt task with done().
+     */
     function finishGalenTests () {
       var testLog = reports.join('\n\r');
       var status = {
@@ -151,6 +193,9 @@ module.exports = function (grunt) {
       done();
     };
 
+    /**
+     * Start the testing process.
+     */
     checkLibrary(function () {
       buildConfigFile(runGalenTests);
     });
