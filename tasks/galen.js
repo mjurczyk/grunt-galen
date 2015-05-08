@@ -31,23 +31,23 @@ module.exports = function (grunt) {
       
       if (options.nogl === true) {
         callback();
+      } else {
+        fs.stat(glPath, function (err, stats) {
+          var copyStream;
+
+          if (!stats || !stats.isFile()) {
+            var copyStream = fs.createWriteStream(glPath);
+
+            copyStream.on('close', function () {
+              if (typeof callback === 'function') {
+                callback();
+              }
+            });
+
+            fs.createReadStream(__dirname + '/../lib/gl.js').pipe(copyStream);
+          }
+        });
       }
-      
-      fs.stat(glPath, function (err, stats) {
-        var copyStream;
-        
-        if (!stats || !stats.isFile()) {
-          var copyStream = fs.createWriteStream(glPath);
-          
-          copyStream.on('close', function () {
-            if (typeof callback === 'function') {
-              callback();
-            }
-          });
-          
-          fs.createReadStream(__dirname + '/../lib/gl.js').pipe(copyStream);
-        }
-      });
     };
 
     // TODO: Add jsdoc
