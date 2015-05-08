@@ -1,0 +1,16 @@
+{
+  "name": "dynamic-file-test",
+  "version": "0.1.0",
+  "keywords": [
+    "grunt",
+    "galen",
+    "example"
+  ],
+  "author": "mjurczyk",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-connect": "^0.10.1",
+    "grunt-galen": "^0.1.4-experimental"
+  }
+}
