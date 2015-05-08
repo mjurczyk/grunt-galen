@@ -114,5 +114,12 @@ default: ***''***
 
 required: ***true***
 
+# Additional information
+Galen JavaScript Reference: [link](http://galenframework.com/docs/reference-javascript-tests-guide/)
+
+SauceLabs Job Configurator: [link](https://docs.saucelabs.com/reference/platforms-configurator/)
+
+SauceLabs Screen Resolutions: [link](https://docs.saucelabs.com/reference/test-configuration/#specifying-the-screen-resolution)
+
 # Licence 
 No idea :octocat:

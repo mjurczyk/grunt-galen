@@ -1,12 +1,17 @@
 /*
  * grunt-galen
  */
+
+var fs = require('fs');
 var childprocess = require('child_process');
 
 module.exports = function (grunt) {
   grunt.registerMultiTask('galen', 'Run Galen tests.', function () {
+    /*
+     * Logging shortcut
+     */
     var log = grunt.log.writeln;
-    
+
     /*
      * Input
      */
@@ -18,12 +23,83 @@ module.exports = function (grunt) {
      * Output
      */
     var reports = [];
-    var spawns = [];
+
+    function buildConfigFile (callback) {
+      var data = {};
+
+      if (options.project) {
+        data.project = options.project;
+      }
+
+      data.url = options.url || '';
+      data.devices = options.devices;
+
+      if (options.seleniumGrid) {
+        data.seleniumGrid = {};
+
+        data.seleniumGrid.url = options.seleniumGrid.url || [
+          'http://',
+          options.seleniumGrid.username,
+          ':',
+          options.seleniumGrid.accessKey,
+          '@ondemand.saucelabs.com:80/wd/hub'
+        ].join('');
+      }
+
+      fs.writeFile((options.cwd || '.') + '/gl.config.js', [
+        'config.set(',
+        JSON.stringify(data),
+        ');\n'
+      ].join(''), function (err) {
+        if (err) {
+          throw err;
+        } else {
+          callback();
+        }
+      });
+    };
 
     /**
-     * Final callback function
+     * Test if file exists.
+     * @param   {String}  file path
+     * @returns {Boolean} file existentional feelings
      */
-    var finishGalenTests = function () {
+    function fileExists (file) {
+      return grunt.file.exists(file);
+    };
+
+    function runGalenTests () {
+      var spawns = [];
+
+      log('Starting Galen.');
+
+      files.forEach(function (file) {
+        file.src.filter(fileExists)
+        .forEach(function (filePath) {
+          var spawn = childprocess.exec([
+            'galen test ',
+            filePath,
+            options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : ''
+          ].join(' '), function (err, output) {
+            if (err) {
+              throw err;
+            }
+
+            log('   • ' + filePath + ' done');
+            reports.push(output);
+
+            spawns.splice(spawns.indexOf(spawn), 1);
+            if (spawns.length === 0) {
+              finishGalenTests();
+            }
+          });
+
+          spawns.push(spawn);
+        })
+      });
+    };
+
+    function finishGalenTests () {
       var testLog = reports.join('\n\r');
       var status = {
         passed: (testLog.match(/pass(ed|ing?)?/gmi) || []).length,
@@ -45,146 +121,8 @@ module.exports = function (grunt) {
 
       done();
     };
-    
-    function validateGalen (callback) {
-      childprocess.exec('galen -v', function (error, output) {
-        if (error) {
-          throw {
-            message: 'Galen not available',
-            error: error
-          };
-        } else {
-          callback();
-        }
-      });
-    };
-    
-    /*
-     * Validate input date. Throw on error.
-     */
-    function validateInputs () {
-      if (options.htmlReport) {
-        if (typeof options.htmlReport !== 'boolean') {
-          throw 'options.htmlReport must be a boolean'; 
-        }
-        if (!options.htmlReportDest) {
-          throw 'options.htmlReportDest not specified, while options.htmlReport set to true';
-        }
-      } else {
-        options.htmlReport = false; 
-      }
-      
-      if (options.htmlReportDest) {
-        if (typeof options.htmlReportDest !== 'string') {
-          throw 'options.htmlReportDest must be a string'; 
-        }
-      } else {
-        options.htmlReportDest = ''; 
-      }
-      
-      if (options.output) {
-        if (typeof options.htmlReport !== 'boolean') {
-          throw 'options.output must be a boolean'; 
-        }
-      } else {
-        options.output = false; 
-      }
-      
-      if (options.devices) {
-        if (typeof options.devices !== 'object') {
-          throw 'options.output must be a object'; 
-        }
-      } else {
-        throw 'options.devices not specified. Cannot test Galen without any target devices.'; 
-      }
-      
-      if (options.url) {
-        if (typeof options.url !== 'string') {
-          throw 'options.url must be a string'; 
-        }
-      } else {
-        throw 'options.url not specified. Cannot test Galen without a target application.'; 
-      }
-    };
-    
-    /**
-     * Test if file exists.
-     * @param   {String}  file path
-     * @returns {Boolean} file existentional feelings
-     */
-    function fileExists (file) {
-      return grunt.file.exists(file);
-    };
 
-    /**
-     * Spawn a testing child process. Each process tests
-     * a single case for a single screen size.
-     * @param {String} testPath testing suite path
-     * @param {String} device   a key/name in the devices table
-     */
-    function spawnTestProcess (testPath, device) {
-      var childProc;
-      var deviceSize = options.devices[device];
+    buildConfigFile(runGalenTests);
 
-      try {
-        childProc = childprocess.exec(
-          [
-            'galen test',
-            testPath,
-            '-DwebsiteUrl="' + options.url + '"',
-            '-Ddevice="' + device + '"',
-            '-Dsize="' + deviceSize + '"',
-            options.htmlReport === true ? '--htmlreport' : '',
-            options.htmlReport === true ? options.htmlReportDest || '' : ''
-          ].join(' '),
-          function onTestFinished (error, output) {
-            if (error) {
-              throw error;
-            }
-
-            log('   • ' + device + ' done');
-            reports.push(output);
-
-            spawns.splice(spawns.indexOf(childProc), 1);
-            if (spawns.length === 0) {
-              finishGalenTests();
-            }
-          }
-        );
-        spawns.push(childProc);
-      } catch (err) {
-        throw err;
-      }
-    };
-    
-    /**
-     * Launch the testing process.
-     */
-    function runTests () {
-      files.forEach(function (file) {
-        file.src.filter(fileExists)
-        .forEach(function (filePath) {
-
-          /*
-           * Print out a label and start a testing suite
-           * for every test file and device size.
-           */
-          log('⦿ ' + filePath);
-
-          Object.keys(options.devices).forEach(function (device) {
-            spawnTestProcess(filePath, device);
-          });
-        });
-      });
-    };
-
-    /*
-     * Testing process
-     */
-    log('Testing Galen...');
-    
-    validateInputs();
-    
-    validateGalen(runTests);
   });
 };
