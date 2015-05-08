@@ -1,3 +1,4 @@
+// TODO: Add jsdoc
 /*
  * grunt-galen
  */
@@ -5,6 +6,7 @@
 var fs = require('fs');
 var childprocess = require('child_process');
 
+// TODO: Add jsdoc
 module.exports = function (grunt) {
   grunt.registerMultiTask('galen', 'Run Galen tests.', function () {
     /*
@@ -23,7 +25,28 @@ module.exports = function (grunt) {
      * Output
      */
     var reports = [];
+    
+    function checkLibrary (callback) {
+      var glPath = (options.cwd || '.') + '/gl.js';
+      
+      fs.stat(glPath, function (err, stats) {
+        var copyStream;
+        
+        if (!stats || !stats.isFile()) {
+          var copyStream = fs.createWriteStream(glPath);
+          
+          copyStream.on('close', function () {
+            if (typeof callback === 'function') {
+              callback();
+            }
+          });
+          
+          fs.createReadStream(__dirname + '/../lib/gl.js').pipe(copyStream);
+        }
+      });
+    };
 
+    // TODO: Add jsdoc
     function buildConfigFile (callback) {
       var data = {};
 
@@ -68,6 +91,7 @@ module.exports = function (grunt) {
       return grunt.file.exists(file);
     };
 
+    // TODO: Add jsdoc
     function runGalenTests () {
       var spawns = [];
 
@@ -99,6 +123,7 @@ module.exports = function (grunt) {
       });
     };
 
+    // TODO: Add jsdoc
     function finishGalenTests () {
       var testLog = reports.join('\n\r');
       var status = {
@@ -108,7 +133,7 @@ module.exports = function (grunt) {
         percentage: 0
       };
       status.total = status.passed + status.failed;
-      status.percentage = status.passed / status.total * 100;
+      status.percentage = status.total !== 0 ? status.passed / status.total * 100 : 0;
 
       if (options.output === true) {
         log(testLog);
@@ -122,7 +147,8 @@ module.exports = function (grunt) {
       done();
     };
 
-    buildConfigFile(runGalenTests);
-
+    checkLibrary(function () {
+      buildConfigFile(runGalenTests);
+    });
   });
 };
