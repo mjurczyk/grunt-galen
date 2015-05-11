@@ -19,11 +19,13 @@ grunt.loadNpmTasks('grunt-galen');
 
 # Preparing the environment
 Galen testing requires three components to run through your tests:
+
 1. Project URL address. (`http://127.0.0.1/` counts, of course)
 2. Galen testing `.spec` files. ([read more](http://galenframework.com/docs/reference-galen-spec-language-guide/))
 3. Target devices / display resolutions.
 
 You might find these articles helpful during the preparations:
+
 1. SauceLabs Device Configurator: [link](https://docs.saucelabs.com/reference/platforms-configurator/)
 2. SauceLabs Screen Resolutions: [link](https://docs.saucelabs.com/reference/test-configuration/#specifying-the-screen-resolution)
 
@@ -209,6 +211,25 @@ When included, `gl.js` exposes its public interface to the test file in the glob
 
 ### gl.cleanCache ()
 > Remove all elements, fetched from the current webpage, from the cache storage.
+
+### config.getDevices ()
+> Retrieve devices list for tests. Compatible with Galen #forAll().
+
+### config.getProjectName ()
+> Retrieve project name. ('Project', if undefined)
+
+### config.getProjectPage ()
+> Return main project URL.
+
+### config.getProjectSubpage ()
+> Return main project URL with appended subpage suffix.
+
+### config.getSeleniumGrid ()
+> Get Selenium Grid configuration. Exposes two values:
+
+> `enabled` - Selenium Grid enabled flag
+
+> `url` - Selenium Grid url.
 
 # Examples
 
