@@ -38,13 +38,11 @@ Test files' main role is to assign  `.spec` files to their target pages of the p
 load ('../gl.js');
 
 forAll(config.getDevices(), function (device) {
-  gl.useDevice(device);
-  
   // Just like unit test's `it( ... )`
   test('Example on ' + device.deviceName, function () {
-    gl.openPage(config.getProjectPage());
+    gl.openPage(device, config.getProjectPage());
     
-    gl.runSpecFile('./test/example-test.spec');
+    gl.runSpecFile(device, './test/example-test.spec');
   });
 });
 ```
@@ -183,24 +181,21 @@ When included, `gl.js` exposes its public interface to the test file in the glob
 ### gl
 > Main functional interface. Implements several useful functions to speed up your tests.
 
-### gl.useDevice ([Object] device)
-> Select current testing device. This is necessary, unless you define `params` in each gl.openPage() or gl.runSpecFile() call.
-
-> Since most tests are initialized with forAll(config.getDevices(), ... ), it is only reasonable to call gl.useDevice() right after that.
-
-***device*** - a device object fetched with config.getDevices()
-
-### gl.openPage ([String] url, [Object] pageElements [, [Object] device])
-> Open target page in the browser. If page times out, test will be failed.
+### gl.openPage ([Object] device, [String] url [, [Object] pageElements])
+> Open target page in the browser on a target device. If page times out, test will be failed.
 
 > If pageElements is defined, Galen will attemp to fetch these elements from the webpage. 
+
+**device*** - a device specification
 
 ***url*** - a target webpage url (see also config.getProjectPage() and config.getProjectSubpage())
 
 ***pageElements*** - a collection of selectors for elements needed in tests ([galen docs](http://galenframework.com/docs/reference-galen-spec-language-guide/#Objectdefinition))
 
-### gl.runSpecFile ([String] file, [Array] tags [, [Object] device])
-> Run a test file on the current device, on the current webpage. This is what Galen is for, after all.
+### gl.runSpecFile ([Object] device, [String] file [, [Array] tags])
+> Run a test file on the target device, on the current webpage. This is what Galen is for, after all.
+
+**device*** - a device specification
 
 ***file*** - a path to the `.test.js` file
 
