@@ -2,8 +2,7 @@
 
 > Grunt plugin for [Galen](http://galenframework.com/) testing framework
 
-In order to use this plugin, we have to install `Galen` first. Plugin does not include
-the framework, only runs it via `Galen cli`.
+In order to use this plugin, we have to install `Galen` first. Plugin does not include the framework ([download here](http://galenframework.com/download/)).
 
 ## Getting started
 In the project directory run:
@@ -18,108 +17,202 @@ Then add it to the Gruntfile:
 grunt.loadNpmTasks('grunt-galen');
 ```
 
-## Testing variables
+# Preparing the environment
+Galen testing requires three components to run through your tests:
+1. Project URL address. (`http://127.0.0.1/` counts, of course)
+2. Galen testing `.spec` files. ([read more](http://galenframework.com/docs/reference-galen-spec-language-guide/))
+3. Target devices / display resolutions.
 
-`grunt-galen` exposes 3 variables for each testing suite:
+You might find these articles helpful during the preparations:
+1. SauceLabs Device Configurator: [link](https://docs.saucelabs.com/reference/platforms-configurator/)
+2. SauceLabs Screen Resolutions: [link](https://docs.saucelabs.com/reference/test-configuration/#specifying-the-screen-resolution)
 
+# Writing Galen tests
+`grunt-galen` exposes a useful `gl.js` module<sup>1</sup>, so you can spend more time improving your project, rather than writing the test files. 
 
-| name     |                  description                  |
-|:---------|:----------------------------------------------|
-|websiteUrl|Url for which the test will be run             |
-|device    |Device codename (ex. mobile, tablet ..)        |
-|size      |Screen dimensions of the device (ex. 800x600)  |
+Test files' main role is to assign  `.spec` files to their target pages of the project. For example `example-test.test.js` can look like this:
 
-## Configuration
+```js
+load ('../gl.js');
 
-In `Gruntfile.js` we can specify a Galen tests configuration via
-options parameter for `galen` task.
+forAll(config.getDevices(), function (device) {
+  gl.useDevice(device);
+  
+  // Just like unit test's `it( ... )`
+  test('Example on ' + device.deviceName, function () {
+    gl.openPage(config.getProjectPage());
+    
+    gl.runSpecFile('./test/example-test.spec');
+  });
+});
+```
+
+This test suite runs the `example-test.spec` file against the main project page. 
+
+Remember that you are not bound to the `gl.js` framework and, if you are familiar with vanilla Galen API, you are welcome to use it with `grunt-galen`. ([more on Galen javascript API](http://galenframework.com/docs/reference-javascript-tests-guide/))
+
+<sup>1</sup> Full `gl.js` docs can be found along with task configuration reference at the bottom of this README.
+
+# Configuring your task
+Example configuration for a simple Galen task:
 
 ```js
 galen: {
-  options: {
-    htmlReport: true,
-    htmlReportDest: 'html-reports/',
+  local: {
+  
+    // Check all test.js files in the test directory
+    src: ['test/**/*.test.js'],
+    options: {
     
-    output: false,
-    
-    devices: {
-      mobile: '320x480',
-      tablet: '768x1024',
-      desktop: '1280x800'
-    },
-    
-    url: 'http://127.0.0.1:8080'
+      // Run test on the localhost:3000
+      url: 'http://127.0.0.1:3000',
+      devices: {
+        
+        // Run tests in firefox browser, scaled to basic desktop resolution
+        desktop: {
+          deviceName: 'desktop',
+          browser: 'firefox',
+          size: '1280x800'
+        },
+        
+        // Also run them in firefox, but scaled to iPad screen size
+        tablet: {
+          deviceName: 'tablet',
+          browser: 'firefox',
+          size: '768x576'
+        }
+      }
+    }
   }
 }
 ```
 
-We can specify `options` for each task separately. Hence, we can run Galen tests on different endpoint urls for each task.
+Now just run the command `grunt galen:local` and enjoy the show!
 
-```js
-galen: {
-  options: {
-    // global options
-  },
-  localTests: {
-    src: [
-      // Say we have our tests under ./PROJECT_DIR/tests/galen/
-      // in different subdirectories.
-      'tests/galen/**/*.test'
-    ]
-    options: {
-      url: 'http://127.0.0.1:8080'
-    }
-  },
-  productionTests: {
-    src: ['tests/galen/**/*.test'],
-    options: {
-      url: 'http://best-site-evr.get-rekt.com'
-    }
-  }
-}
-```
+# Grunt task options
 
-## Options
-
-### options.htmlReport [Boolean]
-> If set to true, Galen will generate HTML reports for each test suite.
-
-default: ***false***
-
-### options.htmlReportDest [String]
-> If options.htmlReport is set to true, specify a directory in which the reports will
-> be saved.
-
-default: ***''***
-
-### options.output [Boolean]
-> If set to true, Galen will print out outputs to the terminal for each test separately.
-> If set to false, Galen will skip the default output for each test, but will still print
-> out the final conclusion (#tests passed, #tests failed and percentage).
-
-default: ***false***
-
-### options.devices [Object/Collection]
-> A map of devices for tests. Specify a codename and a dimensions regarding to the
-> Galen documentation: *{ 'name' : 'widthxheight', ... }*
+## options.project
+> Object containing basic information about the project. 
 
 default: ***undefined***
 
+## options.project.url
+> URL of the project. This URL is prioritized over options.url.
+
+default: ***http://127.0.0.1:80***
+
+## options.project.name
+> Name of the project. Can be used in test files via getProjectName().
+
+default: ***Project***
+
+## options.url
+> URL of the project. 
+
+> Overriden by the options.project.url, if defined. 
+
+> Project URL is not necessary, although it is passed to test files via configuration and can be easily read in every test suite via getProjectPage() and getProjectSubpage(subpage).
+
+default: ***http://127.0.0.1:80***
+
+## options.devices
+> Object containing device definitions for tests. Each device has to have at least three parameters defined in Galen docs: `deviceName`, `browser` and `size`. ([read more](http://galenframework.com/docs/reference-galen-javascript-api/#createDriver))
+
+> If you wish to use grunt-galen with Selenium Grid (especially SauceLabs), you may also want to define `desiredCapabilites` for each device. ([read more](https://docs.saucelabs.com/reference/test-configuration/)) ([drag-and-drop device configurator](https://docs.saucelabs.com/reference/platforms-configurator))
+
+default: ***{}***
+
 required: ***true***
 
-### options.url [String]
-> A url of application to test.
+## options.htmlReport
+> Set to `true`, if you wish Galen to generate HTML report for every test suite.
+
+default: ***false***
+
+## options.htmlReportDest
+> Set to desired HTML report directory.
 
 default: ***''***
 
-required: ***true***
+## options.seleniumGrid
+> Configuration object for a remote Selenium Grid.
 
-# Additional information
-Galen JavaScript Reference: [link](http://galenframework.com/docs/reference-javascript-tests-guide/)
+default: ***disabled***
 
-SauceLabs Job Configurator: [link](https://docs.saucelabs.com/reference/platforms-configurator/)
+## options.seleniumGrid.url
+> URL address of your Selenium Grid.
 
-SauceLabs Screen Resolutions: [link](https://docs.saucelabs.com/reference/test-configuration/#specifying-the-screen-resolution)
+> Overrides options.seleniumGrid.username and options.seleniumGrid.accessKey. (Either is assumed to be contained in the url or not necessary to access the Selenium Grid)
 
-# Licence 
-No idea :octocat:
+default: ***undefined***
+
+## options.seleniumGrid.username
+> ***(Only for SauceLabs)*** SauceLabs username.
+
+default: ***undefined***
+
+## options.seleniumGrid.accessKey
+> ***(Only for SauceLabs*** SauceLabs access key.
+
+default: ***undefined***
+
+## options.nogl
+> Set `true` to disable gl.js functionality for test suites.
+
+default: ***false***
+
+## options.cwd
+> Working directory. (if enabled, gl.js will be created in that directory)
+
+default: ***./***
+
+# GL.js Reference
+
+`gl.js` is a wrapper for some Galen JavaScript functionality, aimed on making testing easier, faster and more intuitive.
+
+## Include
+To use `gl.js` in your test file, you have to load `gl.js` library.  `gl.js` is created on runtime in your `options.cwd` directory, so, for example, if your tests are placed under `test/` and you haven't modified the `options.cwd`, you should load `../gl.js` in your test suite.
+
+## Usage
+When included, `gl.js` exposes its public interface to the test file in the global scope.
+
+## Public gl.js API
+
+### gl
+> Main functional interface. Implements several useful functions to speed up your tests.
+
+### gl.useDevice ([Object] device)
+> Select current testing device. This is necessary, unless you define `params` in each gl.openPage() or gl.runSpecFile() call.
+
+> Since most tests are initialized with forAll(config.getDevices(), ... ), it is only reasonable to call gl.useDevice() right after that.
+
+***device*** - a device object fetched with config.getDevices()
+
+### gl.openPage ([String] url, [Object] pageElements [, [Object] device])
+> Open target page in the browser. If page times out, test will be failed.
+
+> If pageElements is defined, Galen will attemp to fetch these elements from the webpage. 
+
+***url*** - a target webpage url (see also config.getProjectPage() and config.getProjectSubpage())
+
+***pageElements*** - a collection of selectors for elements needed in tests ([galen docs](http://galenframework.com/docs/reference-galen-spec-language-guide/#Objectdefinition))
+
+### gl.runSpecFile ([String] file, [Array] tags [, [Object] device])
+> Run a test file on the current device, on the current webpage. This is what Galen is for, after all.
+
+***file*** - a path to the `.test.js` file
+
+***tags*** - a collection of optional Galen tags for the test
+
+### gl.quit ()
+> Terminate all devices and finish testing immediately.
+
+### gl.cleanCache ()
+> Remove all elements, fetched from the current webpage, from the cache storage.
+
+# Examples
+
+Example projects are presented in the `example/` directory. It is sufficient you go into the directory and run `npm install && grunt` to test any of the examples there.
+
+# License 
+MIT :octocat:

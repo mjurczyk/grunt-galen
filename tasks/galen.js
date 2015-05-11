@@ -51,6 +51,10 @@ module.exports = function (grunt) {
     function checkLibrary (callback) {
       var glPath = (options.cwd || '.') + '/gl.js';
       
+      if (typeof callback !== 'function') {
+        callback = function () {};
+      }
+      
       if (options.nogl === true) {
         callback();
       } else {
@@ -61,12 +65,12 @@ module.exports = function (grunt) {
             var copyStream = fs.createWriteStream(glPath);
 
             copyStream.on('close', function () {
-              if (typeof callback === 'function') {
-                callback();
-              }
+              callback();
             });
 
             fs.createReadStream(__dirname + '/../lib/gl.js').pipe(copyStream);
+          } else {
+            callback();
           }
         });
       }
@@ -198,6 +202,10 @@ module.exports = function (grunt) {
      */
     checkLibrary(function () {
       buildConfigFile(runGalenTests);
+    });
+    
+    process.on('uncaughtException', function(err) {
+      grunt.fail.fatal(err);
     });
   });
 };
