@@ -1,9 +1,10 @@
 {
   "name": "grunt-galen",
-  "version": "0.2.1b",
+  "version": "0.2.1c",
   "description": "Grunt plugin for Galen",
   "files": [
-    "tasks"
+    "tasks",
+    "lib"
   ],
   "repository": {
     "type": "git",
