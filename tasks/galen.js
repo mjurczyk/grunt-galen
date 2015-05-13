@@ -151,9 +151,11 @@ module.exports = function (grunt) {
             'galen test ',
             filePath,
             options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : ''
-          ].join(' '), function (err, output) {
+          ].join(' '), function (err, output, erroutput) {
             if (err) {
               throw err;
+            } else if (erroutput) {
+              throw new Error(erroutput);
             }
 
             log('   • ' + filePath + ' done');
