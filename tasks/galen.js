@@ -156,7 +156,11 @@ module.exports = function (grunt) {
       async.forEach(testFiles, function (filePath, cb) {
 
 
-        var command = ['galen test', filePath, htmlReport].join(' ');
+        var command = ['galen test',
+          filePath,
+          htmlReport,
+          '-DwebsiteUrl="' + options.url + '"'
+        ].join(' ');
 
         childprocess.exec(command, function (err, output, erroutput) {
           if (err) {
