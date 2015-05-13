@@ -32,7 +32,7 @@ module.exports = function (grunt) {
      */
     var options = this.options() || {};
     var done = this.async();
-    var files = this.files;
+    var files = this.filesSrc;
 
     /*
      * @output
@@ -146,11 +146,9 @@ module.exports = function (grunt) {
 
       var testFiles = [];
 
-      files.forEach(function (file) {
-        file.src.filter(fileExists)
-        .forEach(function (filePath) {
-          testFiles.push(filePath);
-        });
+      files.filter(fileExists)
+      .forEach(function (filePath) {
+        testFiles.push(filePath);
       });
 
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
@@ -164,13 +162,18 @@ module.exports = function (grunt) {
           if (err) {
             return cb(err);
           } else if (erroutput.replace(/\s/g, '')) {
-            return cb(new Error(erroutput));
+            
+            log('   • ' + filePath + ' failed'.red);
+            reports.push(erroutput);
+
+            return cb();
           }
 
-          log('   • ' + filePath + ' done');
+          log('   • ' + filePath + ' done'.green);
           reports.push(output);
 
           return cb(null);
+
         });
 
       }, cb);
@@ -209,19 +212,19 @@ module.exports = function (grunt) {
     /**
      * Start the testing process.
      */
-    checkLibrary(function () {
-      async.waterfall([
-        buildConfigFile,
-        runGalenTests,
-        finishGalenTests
-      ], function (err) {
-        if (err) {
-          throw err;
-        }
+    async.waterfall([
+      checkLibrary,
+      buildConfigFile,
+      runGalenTests,
+      finishGalenTests
+    ], function (err) {
+      if (err) {
+        throw err;
+      }
 
-        log('All done');
-        done();
-      });
+      log('All done');
+
+      done();
     });
     
     process.on('uncaughtException', function(err) {
