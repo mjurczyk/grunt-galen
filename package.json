@@ -1,6 +1,6 @@
 {
   "name": "grunt-galen",
-  "version": "0.3.0c",
+  "version": "0.4.0",
   "description": "Grunt plugin for Galen",
   "files": [
     "tasks",
