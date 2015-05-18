@@ -153,6 +153,11 @@ module.exports = function (grunt) {
 
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
 
+      var maxLength = 0;
+      testFiles.forEach(function (filePath) {
+        maxLength = Math.max(maxLength, filePath.length);
+      });
+
       var stack = testFiles.map(function (filePath) {
 
         return function (cb) {
@@ -162,7 +167,16 @@ module.exports = function (grunt) {
             '-DwebsiteUrl="' + options.url + '"'
           ].join(' ');
 
+          // calculate number of spaces
+          var left = Math.abs(maxLength - filePath.length);
+          left += 4;
+          var spaces = [];
+          spaces[left] = ' ';
+
+          grunt.log.write('    • ' + filePath + (spaces.join(' ')));
+
           childprocess.exec(command, function (err, output, erroutput) {
+
             if (err) {
               return cb(err);
             } else if (erroutput.replace(/\s/g, '')) {
@@ -173,17 +187,25 @@ module.exports = function (grunt) {
               return cb();
             }
 
-            log('   • ' + filePath + ' done'.green);
+            if (isFailed(output)) {
+              log('failed'.red);
+            } else {
+              log('done'.green);
+            }
+
             reports.push(output);
 
             return cb(null);
-
           });
         };
 
       });
 
       async.waterfall(stack, cb);
+    }
+
+    function isFailed(testLog) {
+      return (testLog.match(/fail(ed|ing?)?/gmi) || []).length != 0;
     }
 
     /**
