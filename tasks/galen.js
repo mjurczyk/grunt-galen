@@ -235,10 +235,10 @@ module.exports = function (grunt) {
         log(testLog);
       }
 
-      log('passed ' + status.passed + ' test(s) [' + status.percentage + '%]' );
+      log(status.passed + ' tests passed [' + parseInt(status.percentage) + '%]' );
 
       if (status.failed) {
-        grunt.fail.warn('failed ' + status.failed + ' test(s) [' + (100 - status.percentage) + '%]');
+        grunt.fail.warn(status.failed + ' test failed [' + parseInt(100 - status.percentage) + '%]');
       }
 
       return cb();
