@@ -153,9 +153,9 @@ module.exports = function (grunt) {
 
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
 
-      var maxLength = 0;
+      var resultPadding = 0;
       testFiles.forEach(function (filePath) {
-        maxLength = Math.max(maxLength, filePath.length);
+        resultPadding = Math.max(resultPadding, filePath.length);
       });
 
       var stack = testFiles.map(function (filePath) {
@@ -168,7 +168,7 @@ module.exports = function (grunt) {
           ].join(' ');
 
           // calculate number of spaces
-          var left = Math.abs(maxLength - filePath.length);
+          var left = Math.abs(resultPadding - filePath.length);
           left += 4;
           var spaces = [];
           spaces[left] = ' ';
