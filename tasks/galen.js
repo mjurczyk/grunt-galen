@@ -163,8 +163,7 @@ module.exports = function (grunt) {
         return function (cb) {
           var command = ['galen test',
             filePath,
-            htmlReport,
-            '-DwebsiteUrl="' + options.url + '"'
+            htmlReport
           ].join(' ');
 
           // calculate number of spaces
