@@ -153,35 +153,37 @@ module.exports = function (grunt) {
 
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
 
-      async.forEach(testFiles, function (filePath, cb) {
+      var stack = testFiles.map(function (filePath) {
 
+        return function (cb) {
+          var command = ['galen test',
+            filePath,
+            htmlReport,
+            '-DwebsiteUrl="' + options.url + '"'
+          ].join(' ');
 
-        var command = ['galen test',
-          filePath,
-          htmlReport,
-          '-DwebsiteUrl="' + options.url + '"'
-        ].join(' ');
+          childprocess.exec(command, function (err, output, erroutput) {
+            if (err) {
+              return cb(err);
+            } else if (erroutput.replace(/\s/g, '')) {
 
-        childprocess.exec(command, function (err, output, erroutput) {
-          if (err) {
-            return cb(err);
-          } else if (erroutput.replace(/\s/g, '')) {
-            
-            log('   • ' + filePath + ' failed'.red);
-            reports.push(erroutput);
+              log('   • ' + filePath + ' failed'.red);
+              reports.push(erroutput);
 
-            return cb();
-          }
+              return cb();
+            }
 
-          log('   • ' + filePath + ' done'.green);
-          reports.push(output);
+            log('   • ' + filePath + ' done'.green);
+            reports.push(output);
 
-          return cb(null);
+            return cb(null);
 
-        });
+          });
+        };
 
-      }, cb);
+      });
 
+      async.waterfall(stack, cb);
     }
 
     /**
@@ -231,6 +233,7 @@ module.exports = function (grunt) {
     });
     
     process.on('uncaughtException', function(err) {
+      console.error(err.stack);
       grunt.fail.fatal(err);
     });
   });
