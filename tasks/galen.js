@@ -204,6 +204,10 @@ module.exports = function (grunt) {
       async.waterfall(stack, cb);
     }
 
+    /**
+     * Tests log of the report for failed tests
+     * @return {Boolean} - true if report is failed
+     */
     function isFailed(testLog) {
       return (testLog.match(/fail(ed|ing?)?/gmi) || []).length != 0;
     }
