@@ -11,6 +11,7 @@
  */
 var fs = require('fs');
 var childprocess = require('child_process');
+var async = require('async');
 
 /**
  * Grunt task.
@@ -31,7 +32,7 @@ module.exports = function (grunt) {
      */
     var options = this.options() || {};
     var done = this.async();
-    var files = this.files;
+    var files = this.filesSrc;
 
     /*
      * @output
@@ -74,7 +75,7 @@ module.exports = function (grunt) {
           }
         });
       }
-    };
+    }
 
     /**
      * Galen JavaScript API is a closed environment converted to
@@ -122,7 +123,7 @@ module.exports = function (grunt) {
           callback();
         }
       });
-    };
+    }
 
     /**
      * Test if a file exists.
@@ -139,42 +140,55 @@ module.exports = function (grunt) {
      * 
      * When all processes finish, terminate the task.
      */
-    function runGalenTests () {
-      var spawns = [];
+    function runGalenTests (cb) {
 
       log('Starting Galen.');
 
-      files.forEach(function (file) {
-        file.src.filter(fileExists)
-        .forEach(function (filePath) {
-          var spawn = childprocess.exec([
-            'galen test ',
-            filePath,
-            options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : ''
-          ].join(' '), function (err, output) {
-            if (err) {
-              throw err;
-            }
+      var testFiles = [];
 
-            log('   • ' + filePath + ' done');
-            reports.push(output);
-
-            spawns.splice(spawns.indexOf(spawn), 1);
-            if (spawns.length === 0) {
-              finishGalenTests();
-            }
-          });
-
-          spawns.push(spawn);
-        })
+      files.filter(fileExists)
+      .forEach(function (filePath) {
+        testFiles.push(filePath);
       });
-    };
+
+      var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
+
+      async.forEach(testFiles, function (filePath, cb) {
+
+
+        var command = ['galen test',
+          filePath,
+          htmlReport,
+          '-DwebsiteUrl="' + options.url + '"'
+        ].join(' ');
+
+        childprocess.exec(command, function (err, output, erroutput) {
+          if (err) {
+            return cb(err);
+          } else if (erroutput.replace(/\s/g, '')) {
+            
+            log('   • ' + filePath + ' failed'.red);
+            reports.push(erroutput);
+
+            return cb();
+          }
+
+          log('   • ' + filePath + ' done'.green);
+          reports.push(output);
+
+          return cb(null);
+
+        });
+
+      }, cb);
+
+    }
 
     /**
      * Generate reports, print them if necessary, and finish
      * the async Grunt task with done().
      */
-    function finishGalenTests () {
+    function finishGalenTests (cb) {
       var testLog = reports.join('\n\r');
       var status = {
         passed: (testLog.match(/pass(ed|ing?)?/gmi) || []).length,
@@ -190,18 +204,30 @@ module.exports = function (grunt) {
       }
 
       log('passed ' + status.passed + ' test(s) [' + status.percentage + '%]' );
-      if (status.failed > 0) {
-        log('failed ' + status.failed + ' test(s) [' + (100 - status.percentage) + '%]');
+
+      if (status.failed) {
+        grunt.fail.warn('failed ' + status.failed + ' test(s) [' + (100 - status.percentage) + '%]');
       }
 
-      done();
-    };
+      return cb();
+    }
 
     /**
      * Start the testing process.
      */
-    checkLibrary(function () {
-      buildConfigFile(runGalenTests);
+    async.waterfall([
+      checkLibrary,
+      buildConfigFile,
+      runGalenTests,
+      finishGalenTests
+    ], function (err) {
+      if (err) {
+        throw err;
+      }
+
+      log('All done');
+
+      done();
     });
     
     process.on('uncaughtException', function(err) {
