@@ -178,10 +178,17 @@ module.exports = function (grunt) {
               return cb(err);
             } else if (erroutput.replace(/\s/g, '')) {
 
-              log('   • ' + filePath + ' failed'.red);
-              reports.push(erroutput);
+              if ((erroutput.match(/deprecat(ed)?/gm) || []).length > 0) {
+                erroutput = erroutput.replace(/\n/gm, ' ');
 
-              return cb();
+                log(' (! ' + erroutput.yellow  + ') ');
+              } else {
+                log('failed'.red);
+                reports.push(erroutput);
+
+                return cb();
+              }
+
             }
 
             if (isFailed(output)) {
