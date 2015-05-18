@@ -250,8 +250,6 @@ module.exports = function (grunt) {
         throw err;
       }
 
-      log('All done');
-
       done();
     });
     
