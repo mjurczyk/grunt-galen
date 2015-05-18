@@ -153,35 +153,67 @@ module.exports = function (grunt) {
 
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
 
-      async.forEach(testFiles, function (filePath, cb) {
+      var resultPadding = 0;
+      testFiles.forEach(function (filePath) {
+        resultPadding = Math.max(resultPadding, filePath.length);
+      });
 
+      var stack = testFiles.map(function (filePath) {
 
-        var command = ['galen test',
-          filePath,
-          htmlReport,
-          '-DwebsiteUrl="' + options.url + '"'
-        ].join(' ');
+        return function (cb) {
+          var command = ['galen test',
+            filePath,
+            htmlReport
+          ].join(' ');
 
-        childprocess.exec(command, function (err, output, erroutput) {
-          if (err) {
-            return cb(err);
-          } else if (erroutput.replace(/\s/g, '')) {
-            
-            log('   • ' + filePath + ' failed'.red);
-            reports.push(erroutput);
+          var padding = 4;
 
-            return cb();
-          }
+          var spaces = Array(Math.abs(resultPadding - filePath.length) + padding).join(' ');
 
-          log('   • ' + filePath + ' done'.green);
-          reports.push(output);
+          grunt.log.write('    • ' + filePath + spaces);
 
-          return cb(null);
+          childprocess.exec(command, function (err, output, erroutput) {
 
-        });
+            if (err) {
+              return cb(err);
+            } else if (erroutput.replace(/\s/g, '')) {
 
-      }, cb);
+              if ((erroutput.match(/deprecat(ed)?/gm) || []).length > 0) {
+                erroutput = erroutput.replace(/\n/gm, ' ');
 
+                log(' (! ' + erroutput.yellow  + ') ');
+              } else {
+                log('failed'.red);
+                reports.push(erroutput);
+
+                return cb();
+              }
+
+            }
+
+            if (isFailed(output)) {
+              log('failed'.red);
+            } else {
+              log('done'.green);
+            }
+
+            reports.push(output);
+
+            return cb(null);
+          });
+        };
+
+      });
+
+      async.waterfall(stack, cb);
+    }
+
+    /**
+     * Tests log of the report for failed tests
+     * @return {Boolean} - true if report is failed
+     */
+    function isFailed(testLog) {
+      return (testLog.match(/fail(ed|ing?)?/gmi) || []).length != 0;
     }
 
     /**
@@ -225,12 +257,11 @@ module.exports = function (grunt) {
         throw err;
       }
 
-      log('All done');
-
       done();
     });
     
     process.on('uncaughtException', function(err) {
+      console.error(err.stack);
       grunt.fail.fatal(err);
     });
   });
