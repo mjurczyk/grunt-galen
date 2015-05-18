@@ -75,7 +75,7 @@ module.exports = function (grunt) {
           }
         });
       }
-    };
+    }
 
     /**
      * Galen JavaScript API is a closed environment converted to
@@ -123,7 +123,7 @@ module.exports = function (grunt) {
           callback();
         }
       });
-    };
+    }
 
     /**
      * Test if a file exists.
@@ -203,16 +203,14 @@ module.exports = function (grunt) {
         log(testLog);
       }
 
-      if (status.passed) {
-        log('passed ' + status.passed + ' test(s) [' + status.percentage + '%]' );
-      }
+      log('passed ' + status.passed + ' test(s) [' + status.percentage + '%]' );
 
-      if (status.failed > 0) {
+      if (status.failed) {
         grunt.fail.warn('failed ' + status.failed + ' test(s) [' + (100 - status.percentage) + '%]');
       }
 
       return cb();
-    };
+    }
 
     /**
      * Start the testing process.
