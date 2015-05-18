@@ -166,13 +166,11 @@ module.exports = function (grunt) {
             htmlReport
           ].join(' ');
 
-          // calculate number of spaces
-          var left = Math.abs(resultPadding - filePath.length);
-          left += 4;
-          var spaces = [];
-          spaces[left] = ' ';
+          var padding = 4;
 
-          grunt.log.write('    • ' + filePath + (spaces.join(' ')));
+          var spaces = Array(Math.abs(resultPadding - filePath.length) + padding).join(' ');
+
+          grunt.log.write('    • ' + filePath + spaces);
 
           childprocess.exec(command, function (err, output, erroutput) {
 
