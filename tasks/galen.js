@@ -60,19 +60,13 @@ module.exports = function (grunt) {
         callback();
       } else {
         fs.stat(glPath, function (err, stats) {
-          var copyStream;
+          var copyStream = fs.createWriteStream(glPath);
 
-          if (!stats || !stats.isFile()) {
-            var copyStream = fs.createWriteStream(glPath);
-
-            copyStream.on('close', function () {
-              callback();
-            });
-
-            fs.createReadStream(__dirname + '/../lib/gl.js').pipe(copyStream);
-          } else {
+          copyStream.on('close', function () {
             callback();
-          }
+          });
+
+          fs.createReadStream(__dirname + '/../lib/gl.js').pipe(copyStream);
         });
       }
     }
