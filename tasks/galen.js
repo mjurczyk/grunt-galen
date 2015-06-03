@@ -44,7 +44,7 @@ module.exports = function (grunt) {
      * Determine whether gl.js should be used during the build.
      * Unless options.nogl is set to true, that is a case.
      * 
-     * If necessary, duplicate `local` copy of gl.js from ./lib/gl.js
+     * If necessary, duplicate the `local` copy of gl.js from ./lib/gl.js
      * and put it in the cwd directory.
      * 
      * @param {Function} callback function callback
@@ -161,7 +161,6 @@ module.exports = function (grunt) {
           ].join(' ');
 
           var padding = 4;
-
           var spaces = Array(Math.abs(resultPadding - filePath.length) + padding).join(' ');
 
           grunt.log.write('    • ' + filePath + spaces);

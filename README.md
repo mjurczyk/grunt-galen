@@ -230,5 +230,9 @@ When included, `gl.js` exposes its public interface to the test file in the glob
 
 Example projects are presented in the `example/` directory. It is sufficient you go into the directory and run `npm install && grunt` to test any of the examples there.
 
+# Testing
+
+Grunt galen has its testing script `npm test`, which launches an example on a current version of the script (does not load a script from NPM, uses `tasks/galen.js` instead).
+
 # License 
 MIT :octocat:
