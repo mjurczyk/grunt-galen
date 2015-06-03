@@ -1,0 +1,13 @@
+{
+  "name": "current-version-testing",
+  "version": "0.1.0",
+  "keywords": [
+    "grunt",
+    "galen"
+  ],
+  "author": "mjurczyk",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt-contrib-connect": "^0.10.1"
+  }
+}

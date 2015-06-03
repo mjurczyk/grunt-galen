@@ -1,3 +1,4 @@
 node_modules
 gl.config.js
 /example/*/gl.js
+test/gl.js
