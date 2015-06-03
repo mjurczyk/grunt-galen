@@ -17,11 +17,11 @@ module.exports = function (grunt) {
     },
     galen: {
       local: {
-        src: ['test/**/*-saucelabs.test.js'],
+        src: ['test/**/local.test.js'],
         options: {
           output: true,
           concat: true,
-          url: 'http://example.com',
+          url: 'http://127.0.0.1:3000',
           devices: {
             desktop: {
               deviceName: 'desktop',
@@ -37,7 +37,7 @@ module.exports = function (grunt) {
         }
       },
       sl: {
-        src: ['test/**/*-saucelabs.test.js'],
+        src: ['test/**/saucelabs.test.js'],
         options: {
           output: true,
           concat: true,

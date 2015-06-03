@@ -33,6 +33,8 @@ module.exports = function (grunt) {
     var options = this.options() || {};
     var done = this.async();
     var files = this.filesSrc;
+    
+    var filesTmpDir = '.tmp_grunt-galen';
 
     /*
      * @output
@@ -59,6 +61,7 @@ module.exports = function (grunt) {
       if (options.nogl === true) {
         callback();
       } else {
+        // TODO: This can be simplified by grunt.file.copy
         fs.stat(glPath, function (err, stats) {
           var copyStream = fs.createWriteStream(glPath);
 
@@ -92,7 +95,17 @@ module.exports = function (grunt) {
       }
 
       data.url = options.url || '';
-      data.devices = options.devices;
+      data.devices = options.devices || {};
+      
+      Object.keys(data.devices).forEach(function (deviceName) {
+        var device = data.devices[deviceName];
+        
+        Object.keys(device.desiredCapabilities || {}).forEach(function (param) {
+          if (typeof device.desiredCapabilities[param] !== 'string') {
+            grunt.fail.fatal('All desiredCapabilities have to be string variables. [failed on capability `' + param + '`]');      
+          }
+        });
+      });
 
       if (options.seleniumGrid) {
         data.seleniumGrid = {};
@@ -106,17 +119,57 @@ module.exports = function (grunt) {
         ].join('');
       }
 
-      fs.writeFile((options.cwd || '.') + '/gl.config.js', [
+      grunt.file.write((options.cwd || '.') + '/gl.config.js', [
         'config.set(',
         JSON.stringify(data),
         ');\n'
-      ].join(''), function (err) {
-        if (err) {
-          throw err;
-        } else {
-          callback();
-        }
-      });
+      ].join(''));
+      
+      callback();
+    }
+    
+    /**
+     * Concatenate all test files into a single file to speed
+     * up the testing process.
+     * 
+     * File is created in current working directory, under /.tmp_grunt-galen/ subdir.
+     * 
+     * @param {Function} callback function callback
+     */
+    function buildConcatFile (callback) {
+      var testFiles = getTestingFiles();
+      var concat = ['load(\'../gl.js\');'];
+      var tmpFile = (options.cwd || '.') + '/' + filesTmpDir + '/galenTestConcated_' + (new Date()).getTime() + '.test.js';
+      
+      if (testFiles.length > 1 && options.concat === true) {
+        testFiles.forEach(function (file) {
+          var fileSrc = grunt.file.read(file);
+          
+          concat.push(fileSrc.replace(/^load\(('|"){1}.*\/?gl.js('|"){1}\);?$/gm, ''));
+        });
+        
+        grunt.file.write(tmpFile, concat.join('\n\r'));
+        
+        files = [tmpFile];
+      }
+      
+      callback();
+    }
+    
+    /**
+     * Remove temporary concat file.
+     * 
+     * @see buildConcatFile
+     * @param {Function} callback function callback
+     */
+    function removeConcatFile (callback) {
+      var tmpDir = (options.cwd || '.') + '/' + filesTmpDir;
+      
+      if (grunt.file.exists(tmpDir)) {
+        grunt.file.delete(tmpDir);
+      }
+      
+      callback();
     }
 
     /**
@@ -126,7 +179,23 @@ module.exports = function (grunt) {
      */
     function fileExists (file) {
       return grunt.file.exists(file);
-    };
+    }
+    
+    /**
+     * Get all test files. Validate if file exists.
+     * 
+     * @returns {Array} array of files
+     */
+    function getTestingFiles () {
+      var testFiles = [];
+
+      files.filter(fileExists)
+      .forEach(function (filePath) {
+        testFiles.push(filePath);
+      });
+      
+      return testFiles;
+    }
 
     /**
      * Start the testing process. Generate shell terminal commands
@@ -136,14 +205,14 @@ module.exports = function (grunt) {
      */
     function runGalenTests (cb) {
 
-      log('Starting Galen.');
+      if (!options.seleniumGrid) {
+        log('Starting', 'local'.green, 'Galen');
+      } else {
+        log('Starting', 'remote'.green, 'Galen');
+        log('[Tests run on Selenium Grid/SauceLabs can take time, please be patient and monitor your grid status if tests take too long]'.yellow);
+      }
 
-      var testFiles = [];
-
-      files.filter(fileExists)
-      .forEach(function (filePath) {
-        testFiles.push(filePath);
-      });
+      var testFiles = getTestingFiles();
 
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
 
@@ -174,6 +243,9 @@ module.exports = function (grunt) {
               if ((erroutput.match(/deprecat(ed)?/gm) || []).length > 0) {
                 erroutput = erroutput.replace(/\n/gm, ' ');
 
+                /*
+                 * This line can be uncommented to show warnings in the console.
+                 */
                 log(' (! ' + erroutput.yellow  + ') ');
               } else {
                 log('failed'.red);
@@ -243,7 +315,9 @@ module.exports = function (grunt) {
     async.waterfall([
       checkLibrary,
       buildConfigFile,
+      buildConcatFile,
       runGalenTests,
+      removeConcatFile,
       finishGalenTests
     ], function (err) {
       if (err) {
