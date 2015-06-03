@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /*
  * Download and install Galen commandline tool, if necessary.
  */
@@ -6,27 +5,34 @@
 var package = require('../package.json');
 var cmd = require('child_process');
 var download = require('download');
-var cmd = require('child_process');
+var fs = require('fs');
 
 function detectGalenCli (callback) {
   var versionRegex = new RegExp(package.galen.version, 'gm');
-  var CLI_ABSENT = 127;
   
-  cmd.exec('galen -v', function (err, stdout, stderr) {
-    if (err) {
-      if (err.code === CLI_ABSENT || stderr.match(/command not found/g)) {
-        callback.absent(); 
-      } else {
-        throw err;
-      }
-    } else {
-      if (stdout.match(versionRegex)) {
-        callback.present(); 
-      } else {
-        callback.absent();
-      }
+  try {
+    if (fs.statSync(__dirname + '/lib/galen').isFile() && 
+        fs.statSync(__dirname + '/lib/galen.bat').isFile()) {
+
+      return callback.present();
     }
-  });
+  } catch (err) {
+    cmd.exec('galen -v', function (err, stdout, stderr) {
+      if (err) {
+        if (err.code === 127 || err.code === 1 || stderr.match(/command? not (found|recognized)/g)) {
+          callback.absent(); 
+        } else {
+          throw err;
+        }
+      } else {
+        if (stdout.match(versionRegex)) {
+          callback.present(); 
+        } else {
+          callback.absent();
+        }
+      }
+    });  
+  }
 };
 
 function installGalenCli () {
@@ -68,7 +74,7 @@ function done () {
   } else  {
     galenCliPath = __dirname + '/lib/galen';
   }
-
+  
   galenCliExec = cmd.spawn(galenCliPath, process.argv.slice(2), { stdio: 'inherit' });
 
   galenCliExec.on('error', function (err) {

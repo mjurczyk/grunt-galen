@@ -35,12 +35,41 @@ module.exports = function (grunt) {
     var files = this.filesSrc;
     
     var filesTmpDir = '.tmp_grunt-galen';
+    
+    var galenCliAvailable;
 
     /*
      * @output
      * @private
      */
     var reports = [];
+    
+    /**
+     * Check if galen commandline tool is available. If not, substitute
+     * command will be used.
+     * 
+     * Also, if commandline tool is not present, inform the user that
+     * it might be necessary to download galen, which can take some time.
+     * 
+     * @param {Function} callback function callback
+     */
+    function checkGalenCli (callback) {
+      childprocess.exec('galen -v', function (err, output, erroutput) {
+        if (err) {
+          galenCliAvailable = false;
+          
+          if(!grunt.file.exists(__dirname + '/../galen-cli/lib/galen') ||
+             !grunt.file.exists(__dirname + '/../galen-cli/lib/galen.bat')) {
+            log('Galen framework was not found. It will be downloaded during the first test.'.yellow);
+            log('Please be patient as the download can take a moment.'.yellow);
+          }
+        } else {
+          galenCliAvailable = true; 
+        }
+        
+        callback();
+      });
+    }
     
     /**
      * Determine whether gl.js should be used during the build.
@@ -206,9 +235,18 @@ module.exports = function (grunt) {
      * and spawn them as separate child processes.
      * 
      * When all processes finish, terminate the task.
+     * 
+     * TODO: rename `cb` to `callback`s.
      */
     function runGalenTests (cb) {
-
+      var testFiles = getTestingFiles();
+      var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
+      
+      var resultPadding = 0;
+      testFiles.forEach(function (filePath) {
+        resultPadding = Math.max(resultPadding, filePath.length);
+      });
+      
       if (!options.seleniumGrid) {
         log('Starting', 'local'.green, 'Galen');
       } else {
@@ -216,19 +254,11 @@ module.exports = function (grunt) {
         log('[Tests run on Selenium Grid/SauceLabs can take time, please be patient and monitor your grid status if tests take too long]'.yellow);
       }
 
-      var testFiles = getTestingFiles();
-
-      var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
-
-      var resultPadding = 0;
-      testFiles.forEach(function (filePath) {
-        resultPadding = Math.max(resultPadding, filePath.length);
-      });
-
       var stack = testFiles.map(function (filePath) {
-
         return function (cb) {
-          var command = ['galen test',
+          var command = [
+            galenCliAvailable ? 'galen' : 'node ' + __dirname + '/../galen-cli/galen.js',
+            'test',
             filePath,
             htmlReport
           ].join(' ');
@@ -239,7 +269,6 @@ module.exports = function (grunt) {
           grunt.log.write('    • ' + filePath + spaces);
 
           childprocess.exec(command, function (err, output, erroutput) {
-
             if (err) {
               return cb(err);
             } else if (erroutput.replace(/\s/g, '')) {
@@ -317,6 +346,7 @@ module.exports = function (grunt) {
      * Start the testing process.
      */
     async.waterfall([
+      checkGalenCli,
       checkLibrary,
       buildConfigFile,
       buildConcatFile,
