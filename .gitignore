@@ -2,3 +2,5 @@ node_modules
 gl.config.js
 /example/*/gl.js
 test/gl.js
+galen-cli/lib
+/npm-debug.log
