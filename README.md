@@ -1,4 +1,4 @@
-# grunt-galen
+# grunt-galen [![npm version](https://badge.fury.io/js/grunt-galen.svg)](http://badge.fury.io/js/grunt-galen) [![Build Status](https://travis-ci.org/mjurczyk/grunt-galen.svg?branch=master)](https://travis-ci.org/mjurczyk/grunt-galen)
 
 > Grunt plugin for [Galen](http://galenframework.com/) testing framework
 
