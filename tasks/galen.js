@@ -145,7 +145,11 @@ module.exports = function (grunt) {
         testFiles.forEach(function (file) {
           var fileSrc = grunt.file.read(file);
           
-          concat.push(fileSrc.replace(/^load\(('|"){1}.*\/?gl.js('|"){1}\);?$/gm, ''));
+          concat.push([
+            '(function () {',
+            fileSrc.replace(/^load\(('|"){1}.*\/?gl.js('|"){1}\);?$/gm, ''),
+            '})();'
+          ].join('\n\r'));
         });
         
         grunt.file.write(tmpFile, concat.join('\n\r'));
