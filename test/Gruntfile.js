@@ -5,6 +5,11 @@ module.exports = function (grunt) {
    * 
    */
   var package = grunt.file.readJSON('../package.json');
+  var testPipeline = ['connect:server', 'galen:local'];
+  
+  if (process.env.DISABLE_SAUCELABS !== true) {
+    testPipeline.push('galen:sl');
+  }
   
   grunt.initConfig({
     connect: {
@@ -111,5 +116,5 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadTasks('../tasks');
   
-  grunt.registerTask('default', ['connect:server', 'galen:local', 'galen:sl']);
+  grunt.registerTask('default', testPipeline);
 };
