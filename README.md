@@ -91,6 +91,13 @@ Now just run the command `grunt galen:local` and enjoy the show!
 
 # Grunt task options
 
+## options.concat
+> Combine all galen test files into one to speed up the testing process.
+
+> *Warning* - Do not enable this if you wish to know the number of passed/failed tests. If enabled, number of tests will always be *1*.
+
+default: ***false***
+
 ## options.project
 > Object containing basic information about the project. 
 
@@ -120,6 +127,8 @@ default: ***http://127.0.0.1:80***
 
 > If you wish to use grunt-galen with Selenium Grid (especially SauceLabs), you may also want to define `desiredCapabilites` for each device. ([read more](https://docs.saucelabs.com/reference/test-configuration/)) ([drag-and-drop device configurator](https://docs.saucelabs.com/reference/platforms-configurator))
 
+> *Warning* - All desired capabilities ought to be strings. Therefore tags' arrays, boolean values and numbers have to be cast to strings in the Gruntfile.
+
 default: ***{}***
 
 required: ***true***
@@ -148,6 +157,11 @@ default: ***undefined***
 
 ## options.seleniumGrid.username
 > ***(Only for SauceLabs)*** SauceLabs username.
+
+default: ***undefined***
+
+## options.seleniumGrid.login
+> ***(Only for SauceLabs)*** SauceLabs login. This most of the time should have the very same value as `username`, unless you use separate accounts across your team.
 
 default: ***undefined***
 
@@ -230,9 +244,18 @@ When included, `gl.js` exposes its public interface to the test file in the glob
 
 Example projects are presented in the `example/` directory. It is sufficient you go into the directory and run `npm install && grunt` to test any of the examples there.
 
-# Testing
+# Testing [![Sauce Test Status](https://saucelabs.com/buildstatus/gruntgalen-sl)](https://saucelabs.com/u/gruntgalen-sl)
 
 Grunt galen has its testing script `npm test`, which launches an example on a current version of the script (does not load a script from NPM, uses `tasks/galen.js` instead).
+Example includes both local and remote testing.
+
+SauceLabs account for this project is [open for everyone](https://saucelabs.com/u/gruntgalen-sl) who wishes to test the module on a Selenium Grid. Account credentials are available both on SauceLabs page and here:
+
+```js
+login: 'gruntgalen-sl',
+username: 'gruntgalen-sl',
+accessKey: '5fa3a9f6-a912-4294-b254-6041410702f5'
+```
 
 # License 
 MIT :octocat:
