@@ -257,7 +257,7 @@ module.exports = function (grunt) {
       var stack = testFiles.map(function (filePath) {
         return function (cb) {
           var command = [
-            galenCliAvailable ? 'galen' : 'node ' + __dirname + '/../galen-cli/galen.js',
+            galenCliAvailable ? 'galen' : 'node ' + __dirname + '/../galen-cli/cli.js',
             'test',
             filePath,
             htmlReport
