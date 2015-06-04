@@ -11,8 +11,8 @@ function detectGalenCli (callback) {
   var versionRegex = new RegExp(package.galen.version, 'gm');
   
   try {
-    if (fs.statSync(__dirname + '/lib/galen').isFile() && 
-        fs.statSync(__dirname + '/lib/galen.bat').isFile()) {
+    if (fs.fstatSync(__dirname + '/lib/galen').isFile() && 
+        fs.fstatSync(__dirname + '/lib/galen.bat').isFile()) {
 
       return callback.present();
     }
