@@ -6,8 +6,5 @@
     "galen"
   ],
   "author": "mjurczyk",
-  "license": "MIT",
-  "devDependencies": {
-    "grunt-contrib-connect": "^0.10.1"
-  }
+  "license": "MIT"
 }

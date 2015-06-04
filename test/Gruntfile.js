@@ -5,28 +5,26 @@ module.exports = function (grunt) {
    * 
    */
   var package = grunt.file.readJSON('../package.json');
-  var testPipeline = ['connect:server', 'galen:local'];
+  var testPipeline = ['galen:local'];
+  var BUILD_ID = package.version + '_' + String((new Date()).getTime());
   
-  if (process.env.DISABLE_SAUCELABS !== true) {
+  /*
+   * Unless environment variable DISABLE_SAUCELABS is set to TRUE add remote testing.
+   */
+  if (process.env.DISABLE_SAUCELABS != true) {
     testPipeline.push('galen:sl');
   }
   
   grunt.initConfig({
-    connect: {
-      server: {
-        options: {
-          port: 3000,
-          base: 'static'
-        }
-      }
-    },
     galen: {
+      options: {
+        url: 'http://example.com/',
+        output: true,
+        concat: true
+      },
       local: {
-        src: ['test/**/local.test.js'],
+        src: ['test/**/example.test.js'],
         options: {
-          output: true,
-          concat: true,
-          url: 'http://127.0.0.1:3000',
           devices: {
             desktop: {
               deviceName: 'desktop',
@@ -42,11 +40,8 @@ module.exports = function (grunt) {
         }
       },
       sl: {
-        src: ['test/**/saucelabs.test.js'],
+        src: ['test/**/example.test.js'],
         options: {
-          output: true,
-          concat: true,
-          url: 'http://example.com/',
           seleniumGrid: {
             login: 'gruntgalen-sl',
             username: 'gruntgalen-sl',
@@ -68,7 +63,7 @@ module.exports = function (grunt) {
                   'remote testing',
                   'desktop browser'
                 ].join(','),
-                build: package.version + '_' + String((new Date()).getTime()).slice(-6)
+                build: BUILD_ID
               }
             },
             tablet: {
@@ -86,25 +81,25 @@ module.exports = function (grunt) {
                   'remote testing',
                   'ipad browser'
                 ].join(','),
-                build: package.version + '_' + String((new Date()).getTime())
+                build: BUILD_ID
               }
             },
             mobile: {
-              deviceName: 'mobile',
-              browser: 'iphone',
+              deviceName: 'android',
+              browser: 'android',
               desiredCapabilities: {
                 name: 'example.com for mobile',
                 'device-orientation': 'portrait',
-                platform: 'OS X 10.10',
-                version: '8.0',
+                platform: 'Linux',
+                version: '4.4',
                 passed: 'true',
                 tags: [
                   'grunt galen',
                   'example.com',
                   'remote testing',
-                  'iphone browser'
+                  'android browser'
                 ].join(','),
-                build: package.version + '_' + String((new Date()).getTime()).slice(-6)
+                build: BUILD_ID
               }
             }
           }
@@ -113,7 +108,6 @@ module.exports = function (grunt) {
     }
   });
   
-  grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadTasks('../tasks');
   
   grunt.registerTask('default', testPipeline);
