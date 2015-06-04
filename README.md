@@ -2,7 +2,9 @@
 
 > Grunt plugin for [Galen](http://galenframework.com/) testing framework
 
-In order to use this plugin, we have to install `Galen` first. Plugin does not include the framework ([download here](http://galenframework.com/download/)).
+This module includes Galen framework downloader since version ***0.5.0*** ([Galen is also downloadable here](http://galenframework.com/download/)).
+
+*Warning* - Galen framework requires Java runtime environment to work. Java is ***not*** included in this module.
 
 ## Getting started
 In the project directory run:

@@ -19,11 +19,7 @@ function detectGalenCli (callback) {
   } catch (err) {
     cmd.exec('galen -v', function (err, stdout, stderr) {
       if (err) {
-        if (err.code === 127 || err.code === 1 || stderr.match(/command? not (found|recognized)/g)) {
-          callback.absent(); 
-        } else {
-          throw err;
-        }
+        callback.absent(); 
       } else {
         if (stdout.match(versionRegex)) {
           callback.present(); 
