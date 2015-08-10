@@ -1,6 +1,6 @@
 {
   "name": "grunt-galen",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "Grunt plugin for Galen",
   "files": [
     "tasks",
@@ -19,7 +19,7 @@
     "node": ">=0.10.0"
   },
   "galen": {
-    "version": "1.6.3"
+    "version": "2.0.5"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
