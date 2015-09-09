@@ -1,3 +1,5 @@
+## Note: This module is considered deprecated for Galenframework v2.0.3+ and requires further development. Stale for now.
+
 # grunt-galen [![npm version](https://badge.fury.io/js/grunt-galen.svg)](http://badge.fury.io/js/grunt-galen) [![Build Status](https://travis-ci.org/mjurczyk/grunt-galen.svg?branch=master)](https://travis-ci.org/mjurczyk/grunt-galen)
 
 > Grunt plugin for [Galen](http://galenframework.com/) testing framework
