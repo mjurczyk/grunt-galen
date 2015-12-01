@@ -4,3 +4,4 @@ gl.config.js
 test/gl.js
 galen-cli/lib
 /npm-debug.log
+.idea
