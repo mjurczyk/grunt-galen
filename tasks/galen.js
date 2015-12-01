@@ -335,6 +335,7 @@ module.exports = function (grunt) {
         total: total,
         percentage: 0
       };
+
       status.percentage = status.total !== 0 ? status.passed / status.total * 100 : 0;
 
       if (options.output === true) {
