@@ -241,7 +241,8 @@ module.exports = function (grunt) {
     function runGalenTests (cb) {
       var testFiles = getTestingFiles();
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
-      
+      var testngreport = options.testngreport === true ? '--testngreport ' + (options.testngreportDest || '') : '';
+
       var resultPadding = 0;
       testFiles.forEach(function (filePath) {
         resultPadding = Math.max(resultPadding, filePath.length);
@@ -260,7 +261,8 @@ module.exports = function (grunt) {
             galenCliAvailable ? 'galen' : 'node ' + __dirname + '/../galen-cli/cli.js',
             'test',
             filePath,
-            htmlReport
+            htmlReport,
+            testngreport
           ].join(' ');
 
           var padding = 4;
