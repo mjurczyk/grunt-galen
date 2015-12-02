@@ -241,7 +241,7 @@ module.exports = function (grunt) {
     function runGalenTests (cb) {
       var testFiles = getTestingFiles();
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
-      var testngReport = options.testngReport === true ? '--testngReport ' + (options.testngReportDest || '') : '';
+      var testngReport = options.testngReport === true ? '--testngreport ' + (options.testngReportDest || '') : '';
 
       var resultPadding = 0;
       testFiles.forEach(function (filePath) {
@@ -262,7 +262,7 @@ module.exports = function (grunt) {
             'test',
             filePath,
             htmlReport,
-            testngreport
+            testngReport
           ].join(' ');
 
           var padding = 4;
