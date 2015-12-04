@@ -197,7 +197,7 @@ When included, `gl.js` exposes its public interface to the test file in the glob
 ### gl
 > Main functional interface. Implements several useful functions to speed up your tests.
 
-### gl.openPage ([Object] device, [String] url [, [Object] pageElements])
+### gl.openPage ([Object] device, [String] url [, [String] url, [Object] primaryFields, [Object] secondaryFields])
 > Open target page in the browser on a target device. If page times out, test will be failed.
 
 > If pageElements is defined, Galen will attemp to fetch these elements from the webpage. 
@@ -206,7 +206,7 @@ When included, `gl.js` exposes its public interface to the test file in the glob
 
 ***url*** - a target webpage url (see also config.getProjectPage() and config.getProjectSubpage())
 
-***pageElements*** - a collection of selectors for elements needed in tests ([galen docs](http://galenframework.com/docs/reference-galen-spec-language-guide/#Objectdefinition))
+***primaryFields*** - a collection of selectors for elements needed in tests ([galen docs](http://galenframework.com/docs/reference-galen-spec-language-guide/#Objectdefinition))
 
 ### gl.runSpecFile ([Object] device, [String] file [, [Array] tags])
 > Run a test file on the target device, on the current webpage. This is what Galen is for, after all.
