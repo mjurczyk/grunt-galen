@@ -311,7 +311,9 @@ module.exports = function (grunt) {
      * @return {Boolean} - true if report is failed
      */
     function isFailed(testLog) {
-      return (testLog.match(/fail(ed|ing?)?/gmi) || []).length != 0;
+      var failed = /Total failures: (.*)\n/g.exec(testLog);
+      failed = parseInt(failed.toString().replace('Total failures: ',''));
+      return failed != 0;
     }
 
     /**
