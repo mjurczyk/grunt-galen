@@ -241,7 +241,8 @@ module.exports = function (grunt) {
     function runGalenTests (cb) {
       var testFiles = getTestingFiles();
       var htmlReport = options.htmlReport === true ? '--htmlreport ' + (options.htmlReportDest || '') : '';
-      
+      var testngReport = options.testngReport === true ? '--testngreport ' + (options.testngReportDest || '') : '';
+
       var resultPadding = 0;
       testFiles.forEach(function (filePath) {
         resultPadding = Math.max(resultPadding, filePath.length);
@@ -260,7 +261,8 @@ module.exports = function (grunt) {
             galenCliAvailable ? 'galen' : 'node ' + __dirname + '/../galen-cli/cli.js',
             'test',
             filePath,
-            htmlReport
+            htmlReport,
+            testngReport
           ].join(' ');
 
           var padding = 4;
@@ -320,13 +322,22 @@ module.exports = function (grunt) {
      */
     function finishGalenTests (cb) {
       var testLog = reports.join('\n\r');
+
+      var total = /Total tests: (.*)\n/g.exec(testLog);
+      total = parseInt(total.toString().replace('Total tests: ',''));
+
+      var failed = /Total failures: (.*)\n/g.exec(testLog);
+      failed = parseInt(failed.toString().replace('Total failures: ',''));
+
+      var passed = total - failed;
+
       var status = {
-        passed: (testLog.match(/pass(ed|ing?)?/gmi) || []).length,
-        failed: (testLog.match(/fail(ed|ing?)?/gmi) || []).length,
-        total: 0,
+        passed: passed,
+        failed: failed,
+        total: total,
         percentage: 0
       };
-      status.total = status.passed + status.failed;
+
       status.percentage = status.total !== 0 ? status.passed / status.total * 100 : 0;
 
       if (options.output === true) {

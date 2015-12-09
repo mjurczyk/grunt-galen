@@ -147,6 +147,18 @@ default: ***false***
 
 default: ***''***
 
+## options.testngReport
+> Set to `true`, if you wish Galen to generate testNG report for every test suite.
+
+default: ***false***
+
+## options.testngReportDest
+> Set to desired testNG report directory.
+
+default: ***''***
+
+example: ***'report/testng.xml'***
+
 ## options.seleniumGrid
 > Configuration object for a remote Selenium Grid.
 
