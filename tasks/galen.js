@@ -167,10 +167,15 @@ module.exports = function (grunt) {
      */
     function buildConcatFile (callback) {
       var testFiles = getTestingFiles();
-      var concat = ['load(\'../gl.js\');'];
+      var concatScripts = options.concatScripts || ['../gl.js']
+      var concat = [];
       var tmpFile = (options.cwd || '.') + '/' + filesTmpDir + '/galenTestConcated_' + (new Date()).getTime() + '.test.js';
       
       if (testFiles.length > 1 && options.concat === true) {
+        concatScripts.forEach(function(script) {
+          concat.push('load(\'' + script + '\');')
+        });
+
         testFiles.forEach(function (file) {
           var fileSrc = grunt.file.read(file);
           
