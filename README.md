@@ -98,9 +98,19 @@ Now just run the command `grunt galen:local` and enjoy the show!
 ## options.concat
 > Combine all galen test files into one to speed up the testing process.
 
-> *Warning* - Do not enable this if you wish to know the number of passed/failed tests. If enabled, number of tests will always be *1*.
+~~> *Warning* - Do not enable this if you wish to know the number of passed/failed tests. If enabled, number of tests will always be *1*.~~
+> With galen2 you still see the number of passed/failed tests
 
 default: ***false***
+
+## options.concatScripts
+> Inject these global scripts to be loaded before the concatenated tests run.
+> Reason: galen loads the specified files only once. The concatenated scripts are wrapped into closures - so the second script won't be able to load the requested library.
+
+default: ***['../gl.js']***
+
+example:  ***[ '../gl.js', '../bower_components/underscore/underscore.js' ],***
+
 
 ## options.project
 > Object containing basic information about the project. 
